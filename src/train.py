@@ -250,14 +250,19 @@ def run(train_set, val_set):
     for epoch in range(0, _args.epochs):
         _logger.info('Begin epoch {} (steps {} - {})'.format(epoch, global_step, global_step + len(train_loader)))
         tbar = tqdm(total=len(train_loader), ncols=100)
+        batch_num = 0 
         for train_data in train_loader:
             global_step += 1
+            batch_num += 1
 
             optimizer.zero_grad()
-
+            # print('model grad:{}'.format(model.convs[0].weight.grad))
             # Forward through neural network
             dict_all_to_device(train_data, _device)
             pred_transforms, endpoints = model(train_data, _args.num_train_reg_iter)  # Use less iter during training
+            # print('**************************************************************************************************************')
+            if((batch_num % 100) == 0):    #for every 100th batch 
+                print('predicted transform for epoch - {}, batch  no - {}: {}'.format(epoch, batch_num, pred_transforms))
 
             # Compute loss, and optimize
             train_losses = compute_losses(train_data, pred_transforms, endpoints,
@@ -271,6 +276,7 @@ def run(train_set, val_set):
 
             tbar.set_description('Loss:{:.3g}'.format(train_losses['total']))
             tbar.update(1)
+            # print('epoch: {}, batch  no: {}, loss: {}'.format(epoch, global_step, train_losses['total']))
 
             if global_step % _args.summary_every == 0:  # Save tensorboard logs
                 save_summaries(train_writer, data=train_data, predicted=pred_transforms, endpoints=endpoints,

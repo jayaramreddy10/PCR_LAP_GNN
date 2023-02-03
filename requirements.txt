@@ -8,7 +8,5 @@ open3d
 pandas
 scipy
 tensorboardX
-torch
-torchvision
 tqdm
 xlrd
